@@ -10,7 +10,23 @@ class VirtualDiceRollerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Lắc xí ngầu')),
+      appBar: AppBar(
+        iconTheme: IconThemeData(
+          color: Color(0xff087345)
+        ),
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          onPressed: ()=>{
+            Navigator.of(context).pop()
+          },
+          icon: Icon(Icons.arrow_back_ios),
+        ),
+        centerTitle: true,
+        title: Text('Lắc vật phẩm',style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: Color(0xff087345)
+        ),)),
+      
       body: VirtualDiceRollerWidget(),
     );
   }
