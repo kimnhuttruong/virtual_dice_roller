@@ -20,10 +20,20 @@ class _VirtualDiceRollerWidgetState extends State<VirtualDiceRollerWidget>
   late Animation<double> _rotationYAnimation;
   late Animation<double> _rotationZAnimation;
   final Random _random = Random();
-  int rewardPoint = 2;
+  String celebration = "celebration.png";
   int _currentDiceNumber = 1;
+  int rewardPoint = 2;
   List<int> numbers = [1, 2, 3, 4, 5, 6];
   ShakeDetector? _shakeDetector;
+  Map<int, String> facesDiceImg = {
+    1: "https://i.ibb.co/jZ9rZN2/458773052-1211439429984303-5754649544639617371-n.png",
+    2: "https://i.ibb.co/3CcnQrY/458720770-1052503942950905-9154611876704126876-n.png",
+    3: "https://i.ibb.co/smXM5BY/459236769-556535163604970-1113617706066173765-n.png",
+    4: "https://i.ibb.co/2P4GLP4/458753606-507836735210198-5500733764522750099-n.png",
+    5: "https://i.ibb.co/jJqvCYG/459251379-489518600557795-143072884890981896-n.png",
+    6: "https://i.ibb.co/BHJ2KN9/459182922-585503570469002-1568941098303412007-n.png",
+  };
+
   @override
   void initState() {
     super.initState();
@@ -70,15 +80,35 @@ class _VirtualDiceRollerWidgetState extends State<VirtualDiceRollerWidget>
     super.dispose();
   }
 
+  Future<String?> fetchApi() async {
+    Random random = Random();
+    numbers.shuffle(random);
+    return facesDiceImg[numbers[2]];
+  }
+
   // Function to shake and rotate the dice
-  void _shakeDice() {
-    _controller.forward(from: 0);
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      setState(() {
-        Random random = Random();
-        numbers.shuffle(random);
-      });
+  Future<void> _shakeDice() async {
+    _controller.repeat();
+
+    setState(() {
+      celebration = "celebration.gif";
     });
+
+    //wait api
+    String? rs = await Future.delayed(
+      Duration(seconds: 1),
+      () async {
+        return await fetchApi();
+      },
+    );
+    setState(() {
+      facesDiceImg[3] = rs!;
+    });
+
+    _controller.stop();
+    _controller.forward(from: 0);
+
+    // show popup
   }
 
   @override
@@ -103,7 +133,7 @@ class _VirtualDiceRollerWidgetState extends State<VirtualDiceRollerWidget>
                           height: 200,
                           child: Image(
                               image:
-                                  AssetImage('assets/images/source_1.png')))),
+                                  AssetImage('assets/images/$celebration')))),
                   Positioned(
                       top: 0,
                       right: 0,
@@ -113,7 +143,7 @@ class _VirtualDiceRollerWidgetState extends State<VirtualDiceRollerWidget>
                           child: Image(
                               fit: BoxFit.cover,
                               image:
-                                  AssetImage('assets/images/source_2.png')))),
+                                  AssetImage('assets/images/$celebration')))),
                   Align(
                     alignment: Alignment.center,
                     child: AnimatedBuilder(
@@ -128,53 +158,52 @@ class _VirtualDiceRollerWidgetState extends State<VirtualDiceRollerWidget>
                           child: Stack(
                             children: [
                               CustomDiceFace(
-                                number: numbers[5],
                                 alignment: Alignment.center,
                                 widthAndHeight: widthAndHeight,
                                 transform: Matrix4.identity()
                                   ..translate(Vector3(0, 0, -widthAndHeight)),
+                                imgUrl: facesDiceImg[6],
                               ),
 
                               // left side
                               CustomDiceFace(
-                                number: numbers[4],
                                 alignment: Alignment.centerLeft,
                                 widthAndHeight: widthAndHeight,
                                 transform: Matrix4.identity()
                                   ..rotateY(pi / 2.0),
+                                imgUrl: facesDiceImg[5],
                               ),
 
                               // left side
                               CustomDiceFace(
-                                number: numbers[3],
                                 alignment: Alignment.centerRight,
                                 widthAndHeight: widthAndHeight,
                                 transform: Matrix4.identity()
                                   ..rotateY(-pi / 2.0),
+                                imgUrl: facesDiceImg[4],
                               ),
                               // front
                               CustomDiceFace(
-                                number: numbers[2],
                                 widthAndHeight: widthAndHeight,
+                                imgUrl: facesDiceImg[3],
                               ),
 
                               // top side
                               CustomDiceFace(
-                                number: numbers[1],
                                 alignment: Alignment.topCenter,
                                 widthAndHeight: widthAndHeight,
                                 transform: Matrix4.identity()
                                   ..rotateX(-pi / 2.0),
+                                imgUrl: facesDiceImg[2],
                               ),
 
                               // bottom side
                               CustomDiceFace(
-                                number: numbers[0],
-                                alignment: Alignment.bottomCenter,
-                                widthAndHeight: widthAndHeight,
-                                transform: Matrix4.identity()
-                                  ..rotateX(pi / 2.0),
-                              ),
+                                  alignment: Alignment.bottomCenter,
+                                  widthAndHeight: widthAndHeight,
+                                  transform: Matrix4.identity()
+                                    ..rotateX(pi / 2.0),
+                                  imgUrl: facesDiceImg[1]),
                             ],
                           ),
                         );
@@ -204,7 +233,9 @@ class _VirtualDiceRollerWidgetState extends State<VirtualDiceRollerWidget>
                   Container(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _shakeDice,
+                      onPressed: () async {
+                        await _shakeDice();
+                      },
                       style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8)),
